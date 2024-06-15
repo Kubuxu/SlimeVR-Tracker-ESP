@@ -44,7 +44,9 @@ namespace SlimeVR
         struct SensorVQFParams: VQFParams {
             SensorVQFParams() : VQFParams() {
                 #ifndef VQF_NO_MOTION_BIAS_ESTIMATION
-                motionBiasEstEnabled = false;
+                motionBiasEstEnabled = true;
+                biasSigmaMotion = 0.1175f;
+                biasVerticalForgettingFactor = 0;
                 #endif
                 tauAcc = 2.0f;
                 restMinT = 2.0f;
@@ -94,7 +96,7 @@ namespace SlimeVR
             sensor_real_t gyrTs;
             sensor_real_t accTs;
             sensor_real_t magTs;
-
+        public:
             #if SENSOR_USE_MAHONY
                 Mahony<sensor_real_t> mahony;
             #elif SENSOR_USE_MADGWICK
@@ -105,7 +107,7 @@ namespace SlimeVR
                 SensorVQFParams vqfParams {};
                 VQF vqf;
             #endif
-
+        protected:
             // A also used for linear acceleration extraction
             sensor_real_t bAxyz[3]{0.0f, 0.0f, 0.0f};
 
@@ -126,6 +128,7 @@ namespace SlimeVR
             #if ESP32
             sensor_real_t linAccel_guard;   // Temporary patch for some weird ESP32 bug
             #endif
+        public:
         };
     }
 }

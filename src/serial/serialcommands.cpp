@@ -143,6 +143,7 @@ namespace SerialCommands {
                 sensor->isWorking() ? "true" : "false",
                 sensor->getHadData() ? "true" : "false"
             );
+            sensor->logData();
         }
     }
 

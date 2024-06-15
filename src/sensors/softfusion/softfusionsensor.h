@@ -168,6 +168,37 @@ public:
       m_fusion(imu::GyrTs, imu::AccTs, imu::MagTs), m_sensor(I2CImpl(imu::Address + addrSuppl), m_Logger) {}
     ~SoftFusionSensor(){}
 
+    void logData() override {
+        auto vqf_state = m_fusion.vqf.getState();
+        m_Logger.info("Calibrated gyro offset : %f %f %f", UNPACK_VECTOR_ARRAY_OP(m_calibration.G_off, *GScale));
+        m_Logger.debug("Bias: %f %f %f", UNPACK_VECTOR_ARRAY(vqf_state.bias));
+        m_Logger.debug("Bias covariance:");
+        for (int i = 0; i < 3; i++) {
+            m_Logger.debug("%f %f %f", sqrt(abs(vqf_state.biasP[3*i+0]))/100, sqrt(abs(vqf_state.biasP[3*i + 1]))/100, sqrt(abs(vqf_state.biasP[3*i+2]))/100);
+        }
+        float relative_rest_deviations[2] = {0};
+        m_fusion.vqf.getRelativeRestDeviations(relative_rest_deviations);
+        m_Logger.debug("Relative rest deviation gyro=%f acc=%f", relative_rest_deviations[0], relative_rest_deviations[1]);
+
+        // m_Logger.debug("Accelerometer calibration matrix:");
+        // m_Logger.debug("{");
+        // for (int i = 0; i < 3; i++) {
+        //     m_Logger.debug("  %f, %f, %f, %f", m_calibration.A_B[i], m_calibration.A_Ainv[0][i], m_calibration.A_Ainv[1][i], m_calibration.A_Ainv[2][i]);
+        // }
+        // m_Logger.debug("}");
+        // [INFO ] [LSM6DSV:0] Gyro offset : -6.020015 7.160893 4.822171
+        // [INFO ] [SerialCommands] Sensor[1]: LSM6DSV (-0.744 0.002 0.001 0.668) is working: true, had data: true
+        // [DEBUG] [LSM6DSV:1] Bias: 0.000000 0.000000 0.000000
+        // [INFO ] [LSM6DSV:1] Gyro offset : -40.855606 9.361367 9.628648
+        /*
+        [DEBUG] [LSM6DSV:0] Bias: -0.003807 0.004371 0.003198
+[INFO ] [LSM6DSV:0] Gyro offset : 0.000000 0.000000 0.000000
+[INFO ] [SerialCommands] Sensor[1]: LSM6DSV (-0.497 -0.501 -0.491 -0.511) is working: true, had data: true
+[DEBUG] [LSM6DSV:1] Bias: -0.026125 0.005743 0.006399
+[INFO ] [LSM6DSV:1] Gyro offset : 0.000000 0.000000 0.000000
+        */
+    }
+
     void motionLoop() override final
     {
         sendTempIfNeeded();
@@ -216,7 +247,9 @@ public:
         if (sensorCalibration.type == SlimeVR::Configuration::CalibrationConfigType::SFUSION
             && (sensorCalibration.data.sfusion.ImuType == imu::Type)
             && (sensorCalibration.data.sfusion.MotionlessDataLen == MotionlessCalibDataSize())) {
+        
             m_calibration = sensorCalibration.data.sfusion;
+
             recalcFusion();
         }
         else if (sensorCalibration.type == SlimeVR::Configuration::CalibrationConfigType::NONE) {

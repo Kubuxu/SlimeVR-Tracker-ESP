@@ -26,6 +26,7 @@
 
 #define UNPACK_VECTOR(V) V.x, V.y, V.z
 #define UNPACK_VECTOR_ARRAY(V) V[0], V[1], V[2]
+#define UNPACK_VECTOR_ARRAY_OP(V, OP) V[0] OP, V[1] OP, V[2] OP
 #define UNPACK_QUATERNION(Q) Q.x, Q.y, Q.z, Q.w
 
 #endif

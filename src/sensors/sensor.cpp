@@ -61,6 +61,8 @@ void Sensor::sendData() {
     }
 }
 
+void Sensor::logData() {};
+
 void Sensor::printTemperatureCalibrationUnsupported() {
     m_Logger.error("Temperature calibration not supported for IMU %s", getIMUNameByType(sensorType));
 }
